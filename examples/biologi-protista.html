@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biologi Kelas X - Protista Interaktif 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #0f172a; color: white; font-family: sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .pointer-events-auto { pointer-events: auto; }
+        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay -->
+    <div id="ui-layer" class="p-6 flex flex-col justify-between">
+        
+        <!-- Header -->
+        <header class="glass-panel p-4 rounded-xl max-w-2xl pointer-events-auto">
+            <h1 class="text-3xl font-bold text-emerald-400">Dunia Protista</h1>
+            <h2 class="text-xl text-slate-300 mt-1">Biologi SMA Kelas X</h2>
+            <p class="mt-2 text-sm text-slate-400">Silakan putar, zoom, dan klik organisme di bawah ini untuk mempelajari strukturnya.</p>
+        </header>
+
+        <!-- Info Box (Hidden by default, shown on click) -->
+        <div id="info-box" class="glass-panel p-6 rounded-xl max-w-md self-end mb-10 mr-4 pointer-events-auto hidden transition-opacity duration-300 opacity-0">
+            <h3 id="info-title" class="text-2xl font-bold text-emerald-300">Nama Organisme</h3>
+            <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-200">
+                <p id="info-desc">Deskripsi akan muncul di sini.</p>
+                <div class="bg-slate-800/50 p-3 rounded border border-slate-700">
+                    <span class="text-xs text-slate-400 uppercase font-bold tracking-wider">Fakta Menarik</span>
+                    <p id="info-fact" class="mt-1 italic"></p>
+                </div>
+            </div>
+            <button onclick="closeInfo()" class="mt-5 w-full py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm font-semibold transition-colors">Tutup Panel</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="glass-panel p-3 rounded-xl self-center flex space-x-4 pointer-events-auto">
+            <button onclick="changeOrganism('euglena')" class="px-4 py-2 hover:bg-slate-700 rounded transition-colors text-emerald-400 font-medium">Euglena</button>
+            <button onclick="changeOrganism('volvox')" class="px-4 py-2 hover:bg-slate-700 rounded transition-colors text-emerald-400 font-medium">Volvox</button>
+        </div>
+    </div>
+
+    <!-- Three.js Library & Logic (Placeholder setup for Canvas workflow) -->
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+        // Scene Setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('#0f172a');
+        scene.fog = new THREE.FogExp2('#0f172a', 0.05);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 10;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0x4ade80, 1);
+        dirLight.position.set(5, 5, 5);
+        scene.add(dirLight);
+
+        // Placeholder Mesh (To be replaced by complex models in Argon Canvas)
+        const geometry = new THREE.TorusKnotGeometry(2, 0.6, 100, 16);
+        const material = new THREE.MeshStandardMaterial({ 
+            color: 0x10b981, 
+            roughness: 0.2, 
+            metalness: 0.1,
+            wireframe: true 
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            mesh.rotation.x += 0.005;
+            mesh.rotation.y += 0.005;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // UI Interactions (Global scope for onclick)
+        window.closeInfo = function() {
+            const box = document.getElementById('info-box');
+            box.classList.remove('opacity-100');
+            box.classList.add('opacity-0');
+            setTimeout(() => box.classList.add('hidden'), 300);
+        }
+
+        window.changeOrganism = function(type) {
+            const box = document.getElementById('info-box');
+            box.classList.remove('hidden');
+            // Small delay to allow display block before fading in
+            setTimeout(() => {
+                box.classList.remove('opacity-0');
+                box.classList.add('opacity-100');
+            }, 10);
+
+            if(type === 'euglena') {
+                document.getElementById('info-title').innerText = "Euglena viridis";
+                document.getElementById('info-desc').innerText = "Protista mirip tumbuhan bersel satu yang memiliki kloroplas untuk fotosintesis, namun dapat bergerak aktif menggunakan flagela seperti hewan.";
+                document.getElementById('info-fact').innerText = "Memiliki bintik mata (stigma) merah yang sensitif terhadap cahaya untuk mengarahkan sel menuju sumber terang (fototaksis positif).";
+                material.color.setHex(0x10b981); // Green
+            } else {
+                document.getElementById('info-title').innerText = "Volvox globator";
+                document.getElementById('info-desc').innerText = "Koloni alga hijau yang membentuk bola berongga. Setiap sel individu memiliki dua flagela dan dihubungkan oleh benang-benang sitoplasma.";
+                document.getElementById('info-fact').innerText = "Koloni ini bisa berenang berguling-guling seperti bola di dalam air dengan gerakan flagela yang terkoordinasi!";
+                material.color.setHex(0x3b82f6); // Blue
+            }
+        }
+    </script>
+</body>
+</html>
